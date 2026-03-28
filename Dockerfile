@@ -1,5 +1,21 @@
+# اختيار نسخة نود مستقرة
 FROM node:18
-WORKDIR /app
-COPY . .
+
+# تحديد مجلد العمل داخل السيرفر
+WORKDIR /usr/src/app
+
+# نسخ ملفات التعريف أولاً لتسريع التحميل
+COPY package*.json ./
+
+# تثبيت المكتبات (بما فيها express اللي كانت ناقصة)
 RUN npm install
-CMD ["node", "index.js"]
+
+# نسخ باقي الكود
+COPY . .
+
+# فتح البورت اللي السيرفر محتاجه
+EXPOSE 8080
+
+# أمر التشغيل النهائي
+CMD [ "node", "index.js" ]
+ 
