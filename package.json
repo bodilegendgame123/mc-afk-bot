@@ -1,0 +1,7 @@
+{
+  "dependencies": {
+    "mineflayer": "^4.20.0",
+    "prismarine-auth": "^2.1.0"
+  },
+  "scripts": { "start": "node index.js" }
+}
