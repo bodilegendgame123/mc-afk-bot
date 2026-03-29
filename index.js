@@ -2,45 +2,54 @@ const mineflayer = require('mineflayer');
 const express = require('express');
 const app = express();
 
-// استخدام البورت 8080 اللي باين في الـ Log عندك
-const port = process.env.PORT || 8080; 
-app.get('/', (req, res) => res.send('DonutSMP Bot is Alive!'));
-app.listen(port, () => console.log(`Web server started on port ${port}`));
+// إعداد الويب المخصص لـ Railway عشان ما يقفلش البوت
+const port = process.env.PORT || 3000;
+app.get('/', (req, res) => res.send('Railway Bot is Active!'));
+app.listen(port, '0.0.0.0', () => {
+    console.log(`🌐 الويب سيرفر شغال على بورت ${port} لضمان استقرار Railway`);
+});
 
-const botArgs = {
-    host: 'donutsmp.net',
-    port: 25565,
-    username: 'bodylegendgame123@gmail.com',
-    auth: 'microsoft',
-    version: '1.21.4'
-};
-
-function createBot() {
-    const bot = mineflayer.createBot(botArgs);
-
-    bot.on('spawn', () => {
-        console.log('✅ إدخل السيرفر وموجود حالياً في القائمة');
-        // تأكد إنك واقف في مكان آمن في السيرفر
+function startBot() {
+    console.log('⏳ جاري الاتصال بسيرفر DonutSMP...');
+    const bot = mineflayer.createBot({
+        host: 'donutsmp.net',
+        port: 25565,
+        username: 'bodylegendgame123@gmail.com',
+        auth: 'microsoft',
+        version: '1.21.4', 
+        hideErrors: false // عشان يفضح أي خطأ مخفي
     });
 
-    // حركة الـ AFK عشان ما يطردكش
     bot.on('login', () => {
+        console.log('🔑 تم تسجيل الدخول بحساب مايكروسوفت بنجاح!');
+    });
+
+    bot.on('spawn', () => {
+        console.log('✅ البوت نزل في العالم بنجاح وثابت!');
+        // حركة الـ AFK
         setInterval(() => {
             if (bot.entity) {
                 bot.setControlState('jump', true);
                 setTimeout(() => bot.setControlState('jump', false), 500);
             }
-        }, 15000); // بينط كل 15 ثانية
+        }, 15000);
     });
 
-    bot.on('error', (err) => console.log('❌ Error:', err));
+    // لو السيرفر طرده هيطبع السبب هنا
+    bot.on('kicked', (reason) => {
+        console.log('❌ السيرفر طرد البوت، السبب:', JSON.stringify(reason));
+    });
 
-    // إعادة الاتصال التلقائي لو السيرفر رستر
-    bot.on('end', () => {
-        console.log('⚠️ فصل الاتصال.. جاري إعادة المحاولة خلال 10 ثواني');
-        setTimeout(createBot, 10000);
+    bot.on('error', (err) => {
+        console.log('⚠️ حصل خطأ:', err);
+    });
+
+    // لو الاتصال قطع، هيقولنا ليه بالظبط
+    bot.on('end', (reason) => {
+        console.log(`⚠️ الاتصال انقطع! السبب الحقيقي: ${reason}`);
+        console.log('🔄 هحاول أدخل تاني بعد 30 ثانية عشان ماناخدش باند...');
+        setTimeout(startBot, 30000);
     });
 }
 
-createBot();
- 
+startBot();
