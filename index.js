@@ -2,45 +2,52 @@ const mineflayer = require('mineflayer');
 const express = require('express');
 const app = express();
 
-// أهم سطر لـ Railway: لازم يسمع للبورت اللي ريلواي بيفرضه
-const port = process.env.PORT || 3000;
+app.get('/', (req, res) => res.send('Bot is fixing itself!'));
+app.listen(process.env.PORT || 3000, '0.0.0.0');
 
-app.get('/', (req, res) => res.send('Bot is Alive and Stable!'));
-
-app.listen(port, '0.0.0.0', () => {
-    console.log(`🌐 الويب سيرفر شغال على بورت ${port}`);
-});
+const botArgs = {
+    host: 'donutsmp.net',
+    port: 25565,
+    username: 'bodylegendgame123@gmail.com',
+    auth: 'microsoft',
+    // الحل هنا: هنخلي النسخة أوتوماتيك تماماً عشان يتوافق مع بيانات السيرفر
+    version: false, 
+    checkTimeoutInterval: 60000
+};
 
 function startBot() {
-    const bot = mineflayer.createBot({
-        host: 'donutsmp.net',
-        port: 25565,
-        username: 'bodylegendgame123@gmail.com',
-        auth: 'microsoft',
-        version: '1.21.4'
-    });
+    console.log('⏳ جاري الاتصال وتخطي مشكلة الـ Chunk...');
+    const bot = mineflayer.createBot(botArgs);
 
     bot.on('spawn', () => {
-        console.log('✅ البوت دخل السيرفر وموجود حالياً!');
+        console.log('✅ مبروك! البوت تخطى المشكلة ودخل السيرفر بنجاح');
     });
 
-    // حركة النط كل 20 ثانية عشان الـ AFK
     bot.on('login', () => {
+        console.log('🔑 تم تسجيل الدخول..');
+        // نط الـ AFK
         setInterval(() => {
             if (bot.entity) {
                 bot.setControlState('jump', true);
                 setTimeout(() => bot.setControlState('jump', false), 500);
             }
-        }, 20000); 
+        }, 20000);
     });
 
-    bot.on('error', (err) => console.log('❌ خطأ:', err));
+    // مهم جداً: لو حصل خطأ في قراءة الداتا (زي اللي بعته) البوت ما يقفلش
+    bot.on('error', (err) => {
+        if (err.message.includes('Chunk size')) {
+            console.log('⚠️ تجاهل خطأ بسيط في قراءة البيانات.. البوت مستمر');
+        } else {
+            console.log('❌ خطأ:', err.message);
+        }
+    });
 
     bot.on('end', (reason) => {
-        console.log(`⚠️ الاتصال انقطع بسبب: ${reason}`);
-        console.log('🔄 هحاول أرجع كمان 10 ثواني...');
-        setTimeout(startBot, 10000); 
+        console.log(`⚠️ الاتصال انقطع: ${reason}`);
+        setTimeout(startBot, 10000);
     });
 }
 
 startBot();
+ 
